@@ -1,7 +1,7 @@
 #include "crypto.h"
 
-void encryptBuffer(unsigned char* data, int size){
+void encryptBuffer(char* data, int size){
 }
 
-void decryptBuffer(unsigned char* data, int size){
+void decryptBuffer(char* data, int size){
 }
