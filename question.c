@@ -118,6 +118,7 @@ void editQuestion(){
     int choice;
     int field;
     Question* q;
+    char filter[MAX_TEXT] = "";
  
     if(questionCount == 0){
         printf("No questions to edit.\n");
@@ -125,6 +126,18 @@ void editQuestion(){
     }
  
     printf("\n--- Edit question ---\n");
+
+    printf("Enter search keyword to filter (or press Enter to show all): ");
+    fgets(filter, sizeof(filter), stdin);
+    stripNewline(filter);
+ 
+    printf("\nAvailable questions:\n");
+    for(i = 0; i < questionCount; i++){
+        if(strlen(filter) > 0 && strstr(questions[i].question, filter) == NULL) {
+            continue;
+        }
+        printf("  %d. [%d/10] %s\n", i + 1, questions[i].difficulty, questions[i].question);
+    }
 
     do{
         printf("\nSelect question number to edit (1-%d): ", questionCount);
