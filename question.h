@@ -4,12 +4,13 @@
 #define MAX_TEXT 256
 #define MAX_QUESTIONS 1000
 
+#define ANSWERS_COUNT 4
+
 typedef struct{
     char question[MAX_TEXT];
     int difficulty;
-    char answers[4][MAX_TEXT];
+    char answers[ANSWERS_COUNT][MAX_TEXT];
     int correctAnswer;
-
 } Question;
 
 extern Question questions[MAX_QUESTIONS];
