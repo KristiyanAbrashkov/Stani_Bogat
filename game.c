@@ -66,7 +66,7 @@ void joker5050(Question* q) {
 	}
 
 	if (question == NULL) {
-		printf("Няма активен въпрос!\n");
+		printf("No active question!\n");
 		return;
 	}
 
@@ -81,7 +81,7 @@ void joker5050(Question* q) {
 
 	int keptWrongAnswer = wrongAnswers[rand() % wrongCount];
 
-	printf("50/50 жокер - остават:\n");
+	printf("50/50 lifeline - remaining options:\n");
 	printf("%s: %s\n", answerLabel(question->correctAnswer), question->answers[question->correctAnswer]);
 	printf("%s: %s\n", answerLabel(keptWrongAnswer), question->answers[keptWrongAnswer]);
 }
@@ -96,7 +96,7 @@ int friendHelp(Question* q) {
 	}
 
 	if (question == NULL) {
-		printf("Няма активен въпрос!\n");
+		printf("No active question!\n");
 		return -1;
 	}
 
@@ -114,7 +114,7 @@ int friendHelp(Question* q) {
 		} while (suggestion == question->correctAnswer);
 	}
 
-	printf("Приятелят мисли, че отговорът е %s (%s).\n", answerLabel(suggestion), question->answers[suggestion]);
+	printf("Your friend thinks the answer is %s (%s).\n", answerLabel(suggestion), question->answers[suggestion]);
 
 	return suggestion;
 }
@@ -123,7 +123,7 @@ void audienceHelp(Question* q) {
     Question* question = q != NULL ? q : currentQuestion;
 
 	if (question == NULL) {
-		printf("Няма активен въпрос!\n");
+		printf("No active question!\n");
 		return;
 	}
 
@@ -152,7 +152,7 @@ void audienceHelp(Question* q) {
 	shares[otherIndexes[1]] = second;
 	shares[otherIndexes[2]] = third;
 
-	printf("Публиката гласува: \n");
+	printf("The audience votes:\n");
 	for (int i = 0; i < 4; i++) {
 		printf("%s: %d%%\n", answerLabel(i), shares[i]);
 	}
