@@ -86,8 +86,37 @@ void joker5050(Question* q) {
 	printf("%s: %s\n", answerLabel(keptWrongAnswer), question->answers[keptWrongAnswer]);
 }
 
-int friendHelp(Question* q){
+int friendHelp(Question* q) {
+	Question* question = NULL;
+
+	if (q != NULL) {
+		question = q;
+	} else {
+		question = currentQuestion;
+	}
+
+	if (question == NULL) {
+		printf("Няма активен въпрос!\n");
+		return -1;
+	}
+
+	int chanceOfCorrect = 80 - (question->difficulty - 1) * 12;
+	if (chanceOfCorrect < 35) {
+		chanceOfCorrect = 35;
+	}
+
+	int roll = rand() % 100;
+	int suggestion = question->correctAnswer;
+
+	if (roll >= chanceOfCorrect) {
+		do {
+			suggestion = rand() % 4;
+		} while (suggestion == question->correctAnswer);
+	}
+
+	printf("Приятелят мисли, че отговорът е %s (%s).\n", answerLabel(suggestion), question->answers[suggestion]);
+
+	return suggestion;
 }
 
-void audienceHelp(Question* q){
-}
+void audienceHelp(Question* q) {}
