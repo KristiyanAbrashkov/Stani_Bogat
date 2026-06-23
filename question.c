@@ -114,6 +114,70 @@ void addQuestion(){
 }
 
 void editQuestion(){
+    int i;
+    int choice;
+    int field;
+    Question* q;
+ 
+    if(questionCount == 0){
+        printf("No questions to edit.\n");
+        return;
+    }
+ 
+    printf("\n--- Edit question ---\n");
+
+    do{
+        printf("\nSelect question number to edit (1-%d): ", questionCount);
+        scanf("%d", &choice);
+        getchar();
+    }while(choice < 1 || choice > questionCount);
+ 
+    q = &questions[choice - 1];
+ 
+    printf("\nWhich field do you want to change?\n");
+    printf("1) Question text\n");
+    printf("2) Difficulty\n");
+    printf("3) Answer A\n");
+    printf("4) Answer B\n");
+    printf("5) Answer C\n");
+    printf("6) Answer D\n");
+    printf("7) Correct answer\n");
+ 
+    do{
+        printf("Choice (1-7): ");
+        scanf("%d", &field);
+        getchar();
+    }while(field < 1 || field > 7);
+ 
+    switch(field){
+        case 1:
+            printf("New text: ");
+            fgets(q->question, MAX_TEXT, stdin);
+            stripNewline(q->question);
+            break;
+        case 2:
+            do{
+                printf("New difficulty (1-10): ");
+                scanf("%d", &q->difficulty);
+                getchar();
+            }while(q->difficulty < 1 || q->difficulty > 10);
+            break;
+        case 3: case 4: case 5: case 6:
+            printf("New answer %c: ", 'A' + (field - 3));
+            fgets(q->answers[field - 3], MAX_TEXT, stdin);
+            stripNewline(q->answers[field - 3]);
+            break;
+        case 7:
+            do{
+                printf("New correct answer (1-4): ");
+                scanf("%d", &q->correctAnswer);
+                getchar();
+            }while(q->correctAnswer < 1 || q->correctAnswer > 4);
+            q->correctAnswer--;
+            break;
+    }
+ 
+    printf("Question edited successfully!\n");
 }
 
 void printQuestion(int index) {
