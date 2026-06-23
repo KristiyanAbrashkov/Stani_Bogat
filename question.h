@@ -9,7 +9,7 @@
 typedef struct{
     char question[MAX_TEXT];
     int difficulty;
-    char answers[4][MAX_TEXT];
+    char answers[ANSWERS_COUNT][MAX_TEXT];
     int correctAnswer;
 } Question;
 
