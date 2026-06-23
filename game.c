@@ -66,7 +66,7 @@ void joker5050(Question* q) {
 	}
 
 	if (question == NULL) {
-		printf("Няма активен въпрос!\n");
+		printf("No active question!\n");
 		return;
 	}
 
@@ -81,7 +81,7 @@ void joker5050(Question* q) {
 
 	int keptWrongAnswer = wrongAnswers[rand() % wrongCount];
 
-	printf("50/50 жокер - остават:\n");
+	printf("50/50 lifeline - remaining options:\n");
 	printf("%s: %s\n", answerLabel(question->correctAnswer), question->answers[question->correctAnswer]);
 	printf("%s: %s\n", answerLabel(keptWrongAnswer), question->answers[keptWrongAnswer]);
 }
@@ -96,7 +96,7 @@ int friendHelp(Question* q) {
 	}
 
 	if (question == NULL) {
-		printf("Няма активен въпрос!\n");
+		printf("No active question!\n");
 		return -1;
 	}
 
@@ -114,9 +114,46 @@ int friendHelp(Question* q) {
 		} while (suggestion == question->correctAnswer);
 	}
 
-	printf("Приятелят мисли, че отговорът е %s (%s).\n", answerLabel(suggestion), question->answers[suggestion]);
+	printf("Your friend thinks the answer is %s (%s).\n", answerLabel(suggestion), question->answers[suggestion]);
 
 	return suggestion;
 }
 
-void audienceHelp(Question* q) {}
+void audienceHelp(Question* q) {
+    Question* question = q != NULL ? q : currentQuestion;
+
+	if (question == NULL) {
+		printf("No active question!\n");
+		return;
+	}
+
+	int correctShare = 55 - (question->difficulty - 1) * 8;
+	if (correctShare < 25) {
+		correctShare = 25;
+	}
+
+	int remainingShare = 100 - correctShare;
+	int shares[4] = {0, 0, 0, 0};
+	shares[question->correctAnswer] = correctShare;
+
+	int otherIndexes[3];
+	int otherCount = 0;
+	for (int i = 0; i < 4; i++) {
+		if (i != question->correctAnswer) {
+			otherIndexes[otherCount++] = i;
+		}
+	}
+
+	int first = rand() % (remainingShare + 1);
+	int second = rand() % (remainingShare - first + 1);
+	int third = remainingShare - first - second;
+
+	shares[otherIndexes[0]] = first;
+	shares[otherIndexes[1]] = second;
+	shares[otherIndexes[2]] = third;
+
+	printf("The audience votes:\n");
+	for (int i = 0; i < 4; i++) {
+		printf("%s: %d%%\n", answerLabel(i), shares[i]);
+	}
+}
