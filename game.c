@@ -119,4 +119,41 @@ int friendHelp(Question* q) {
 	return suggestion;
 }
 
-void audienceHelp(Question* q) {}
+void audienceHelp(Question* q) {
+    Question* question = q != NULL ? q : currentQuestion;
+
+	if (question == NULL) {
+		printf("Няма активен въпрос!\n");
+		return;
+	}
+
+	int correctShare = 55 - (question->difficulty - 1) * 8;
+	if (correctShare < 25) {
+		correctShare = 25;
+	}
+
+	int remainingShare = 100 - correctShare;
+	int shares[4] = {0, 0, 0, 0};
+	shares[question->correctAnswer] = correctShare;
+
+	int otherIndexes[3];
+	int otherCount = 0;
+	for (int i = 0; i < 4; i++) {
+		if (i != question->correctAnswer) {
+			otherIndexes[otherCount++] = i;
+		}
+	}
+
+	int first = rand() % (remainingShare + 1);
+	int second = rand() % (remainingShare - first + 1);
+	int third = remainingShare - first - second;
+
+	shares[otherIndexes[0]] = first;
+	shares[otherIndexes[1]] = second;
+	shares[otherIndexes[2]] = third;
+
+	printf("Публиката гласува: \n");
+	for (int i = 0; i < 4; i++) {
+		printf("%s: %d%%\n", answerLabel(i), shares[i]);
+	}
+}
