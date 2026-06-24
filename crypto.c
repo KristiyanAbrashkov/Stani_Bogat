@@ -1,7 +1,25 @@
 #include "crypto.h"
 
-void encryptBuffer(char* data, int size){
+#define SHIFT 5
+
+void encryptText(char* text)
+{
+    int i = 0;
+
+    while (text[i] != '\0')
+    {
+        text[i] += SHIFT;
+        i++;
+    }
 }
 
-void decryptBuffer(char* data, int size){
+void decryptText(char* text)
+{
+    int i = 0;
+
+    while (text[i] != '\0')
+    {
+        text[i] -= SHIFT;
+        i++;
+    }
 }

@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-
+#include "crypto.h"
 #include "question.h"
 
 Question questions[MAX_QUESTIONS];
