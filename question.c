@@ -216,6 +216,29 @@ void printQuestion(int index) {
 }
 
 int saveQuestions(const char* filename){
+    FILE* f;
+    int i, j;
+
+    f = fopen(filename, "w");
+    if(f == NULL){
+        printf("Error: file '%s' cannot be opened for writing.\n", filename);
+        return 0;
+    }
+
+    fprintf(f, "%d\n", questionCount);
+
+    for(i = 0; i < questionCount; i++){
+        fprintf(f, "%s\n", questions[i].question);
+        fprintf(f, "%d\n", questions[i].difficulty);
+        for(j = 0; j < ANSWERS_COUNT; j++){
+            fprintf(f, "%s\n", questions[i].answers[j]);
+        }
+        fprintf(f, "%d\n", questions[i].correctAnswer);
+    }
+
+    fclose(f);
+    printf("Saved %d questions to '%s'.\n", questionCount, filename);
+    return 1;
 }
 
 int loadQuestions(const char* filename){
