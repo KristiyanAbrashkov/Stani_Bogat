@@ -48,7 +48,7 @@ void addQuestion(){
         if(filled[1]) printf("%d/10 (%s)\n", q.difficulty, getDifficultyCategory(q.difficulty));
         else printf("(not set)\n");
  
-        for (i = 0; i < 4; i++){
+        for (i = 0; i < ANSWERS_COUNT; i++){
             printf("%d) Answer %c: ", 3 + i, 'A' + i);
             if (filled[2 + i]) printf("%s\n", q.answers[i]);
             else printf("(not set)\n");
@@ -90,7 +90,7 @@ void addQuestion(){
                     printf("Correct answer (1-4): ");
                     scanf("%d", &q.correctAnswer);
                     getchar();
-                }while(q.correctAnswer < 1 || q.correctAnswer > 4);
+                }while(q.correctAnswer < 1 || q.correctAnswer > ANSWERS_COUNT);
                 q.correctAnswer--;
                 filled[6] = 1;
                 break;
@@ -185,7 +185,7 @@ void editQuestion(){
                 printf("New correct answer (1-4): ");
                 scanf("%d", &q->correctAnswer);
                 getchar();
-            }while(q->correctAnswer < 1 || q->correctAnswer > 4);
+            }while(q->correctAnswer < 1 || q->correctAnswer > ANSWERS_COUNT);
             q->correctAnswer--;
             break;
     }
