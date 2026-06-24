@@ -245,4 +245,62 @@ int saveQuestions(const char* filename){
 }
 
 int loadQuestions(const char* filename){
+    FILE* f;
+    int i, j;
+    int savedCount;
+
+    f = fopen(filename, "r");
+
+    if(f == NULL){
+        printf("Error: file '%s' cannot be opened for reading.\n", filename);
+        return 0;
+    }
+
+    if(fscanf(f, "%d", &savedCount) != 1){
+        printf("Error: Invalid file format.\n");
+        fclose(f);
+        return 0;
+    }
+
+    fgetc(f);
+
+    if(savedCount > MAX_QUESTIONS){
+        printf("Warning: File contains %d questions, but maximum allowed is %d.\n",
+               savedCount,
+               MAX_QUESTIONS);
+
+        questionCount = MAX_QUESTIONS;
+    }
+    else{
+        questionCount = savedCount;
+    }
+
+    for(i = 0; i < questionCount; i++){
+
+        fgets(questions[i].question, MAX_TEXT, f);
+        stripNewline(questions[i].question);
+        decryptText(questions[i].question);
+
+        fscanf(f, "%d", &questions[i].difficulty);
+        fgetc(f);
+
+        for(j = 0; j < ANSWERS_COUNT; j++){
+
+            fgets(questions[i].answers[j], MAX_TEXT, f);
+            stripNewline(questions[i].answers[j]);
+
+            decryptText(questions[i].answers[j]);
+        }
+
+        fscanf(f, "%d", &questions[i].correctAnswer);
+        fgetc(f);
+    }
+
+    fclose(f);
+
+    printf("Successfully loaded %d questions from '%s'.\n",
+           questionCount,
+           filename);
+
+    return 1;
 }
