@@ -6,6 +6,11 @@
 
 static Question* currentQuestion = NULL;
 static int randomSeeded = 0;
+static int availableAnswers[4] = {1, 1, 1, 1};
+
+#define CHOICE_5050 4
+#define CHOICE_FRIEND 5
+#define CHOICE_AUDIENCE 6
 
 static void seedRandomGenerator(void) {
 	if (!randomSeeded) {
@@ -24,11 +29,33 @@ static const char* answerLabel(int index) {
 	}
 }
 
-static int readAnswer() {
+static void setCurrentQuestion(Question* question) {
+	if (currentQuestion != question) {
+		currentQuestion = question;
+
+		for (int i = 0; i < 4; i++) {
+			availableAnswers[i] = 1;
+		}
+	}
+}
+
+static int hintChance(int difficulty) {
+	if (difficulty <= 3) {
+		return 80;
+	}
+
+	if (difficulty <= 6) {
+		return 60;
+	}
+
+	return 30;
+}
+
+static int readGameChoice() {
 	char input[20];
 
 	while (1) {
-		printf("Your answer (A-D): ");
+		printf("Your choice: ");
 
 		if (fgets(input, sizeof(input), stdin) == NULL) {
 			return -1;
@@ -42,15 +69,30 @@ static int readAnswer() {
 			return input[0] - 'A';
 		}
 
-		printf("Invalid answer. Please enter A, B, C or D.\n");
+		if (input[0] == '1') {
+			return CHOICE_5050;
+		}
+
+		if (input[0] == '2') {
+			return CHOICE_FRIEND;
+		}
+
+		if (input[0] == '3') {
+			return CHOICE_AUDIENCE;
+		}
+
+		printf("Invalid choice. Enter A-D or a lifeline number.\n");
 	}
 }
 
 void startGame() {
 	Question* gameQuestions[10];
+	int lifeline5050Available = 1;
+	int friendLifelineAvailable = 1;
+	int audienceLifelineAvailable = 1;
 	int difficulty;
 	int questionNumber;
-	int answer;
+	int choice;
 
 	seedRandomGenerator();
 	currentQuestion = NULL;
@@ -69,36 +111,88 @@ void startGame() {
 	printf("\nThe game has started! Answer all 10 questions to win.\n");
 
 	for (questionNumber = 0; questionNumber < 10; questionNumber++) {
-		currentQuestion = gameQuestions[questionNumber];
+		setCurrentQuestion(gameQuestions[questionNumber]);
 
-		printf("\n========================================\n");
-		printf("Question %d/10 | Difficulty: %d/10\n",
-		       questionNumber + 1, currentQuestion->difficulty);
-		printf("========================================\n");
-		printf("%s\n\n", currentQuestion->question);
+		while (1) {
+			printf("\n========================================\n");
+			printf("Question %d/10 | Difficulty: %d/10\n",
+			       questionNumber + 1, currentQuestion->difficulty);
+			printf("========================================\n");
+			printf("%s\n\n", currentQuestion->question);
 
-		for (int i = 0; i < 4; i++) {
-			printf("  %s) %s\n",
-			       answerLabel(i), currentQuestion->answers[i]);
+			for (int i = 0; i < 4; i++) {
+				if (availableAnswers[i]) {
+					printf("  %s) %s\n",
+					       answerLabel(i), currentQuestion->answers[i]);
+				}
+			}
+
+			printf("\nAvailable lifelines:\n");
+			if (lifeline5050Available) {
+				printf("  1) 50/50\n");
+			}
+			if (friendLifelineAvailable) {
+				printf("  2) Phone a friend\n");
+			}
+			if (audienceLifelineAvailable) {
+				printf("  3) Ask the audience\n");
+			}
+			printf("Enter A-D to answer or choose an available lifeline.\n");
+
+			choice = readGameChoice();
+
+			if (choice == -1) {
+				printf("The game was interrupted.\n");
+				currentQuestion = NULL;
+				return;
+			}
+
+			if (choice == CHOICE_5050) {
+				if (lifeline5050Available) {
+					joker5050(currentQuestion);
+					lifeline5050Available = 0;
+				} else {
+					printf("The 50/50 lifeline has already been used.\n");
+				}
+				continue;
+			}
+
+			if (choice == CHOICE_FRIEND) {
+				if (friendLifelineAvailable) {
+					friendHelp(currentQuestion);
+					friendLifelineAvailable = 0;
+				} else {
+					printf("Phone a friend has already been used.\n");
+				}
+				continue;
+			}
+
+			if (choice == CHOICE_AUDIENCE) {
+				if (audienceLifelineAvailable) {
+					audienceHelp(currentQuestion);
+					audienceLifelineAvailable = 0;
+				} else {
+					printf("Ask the audience has already been used.\n");
+				}
+				continue;
+			}
+
+			if (!availableAnswers[choice]) {
+				printf("This answer was removed by the 50/50 lifeline.\n");
+				continue;
+			}
+
+			if (choice != currentQuestion->correctAnswer) {
+				printf("Wrong answer! The correct answer was %s.\n",
+				       answerLabel(currentQuestion->correctAnswer));
+				printf("Game over!\n");
+				currentQuestion = NULL;
+				return;
+			}
+
+			printf("Correct answer!\n");
+			break;
 		}
-
-		answer = readAnswer();
-
-		if (answer == -1) {
-			printf("The game was interrupted.\n");
-			currentQuestion = NULL;
-			return;
-		}
-
-		if (answer != currentQuestion->correctAnswer) {
-			printf("Wrong answer! The correct answer was %s.\n",
-			       answerLabel(currentQuestion->correctAnswer));
-			printf("Game over!\n");
-			currentQuestion = NULL;
-			return;
-		}
-
-		printf("Correct answer!\n");
 	}
 
 	printf("\nCongratulations! You answered all 10 questions correctly!\n");
@@ -128,20 +222,16 @@ Question* getRandomQuestion(int difficulty) {
 	}
 
 	int selectedIndex = matchingIndexes[rand() % matchingCount];
-	currentQuestion = &questions[selectedIndex];
+	setCurrentQuestion(&questions[selectedIndex]);
 	return currentQuestion;
 }
 
 void joker5050(Question* q) {
-	Question* question = NULL;
-
 	if (q != NULL) {
-		question = q;
-	} else {
-		question = currentQuestion;
+		setCurrentQuestion(q);
 	}
 
-	if (question == NULL) {
+	if (currentQuestion == NULL) {
 		printf("No active question!\n");
 		return;
 	}
@@ -150,86 +240,117 @@ void joker5050(Question* q) {
 	int wrongCount = 0;
 
 	for (int i = 0; i < 4; i++) {
-		if (i != question->correctAnswer) {
+		if (i != currentQuestion->correctAnswer && availableAnswers[i]) {
 			wrongAnswers[wrongCount++] = i;
 		}
 	}
 
+	if (wrongCount <= 1) {
+		printf("The 50/50 lifeline is already active.\n");
+		return;
+	}
+
 	int keptWrongAnswer = wrongAnswers[rand() % wrongCount];
 
-	printf("50/50 lifeline - remaining options:\n");
-	printf("%s: %s\n", answerLabel(question->correctAnswer), question->answers[question->correctAnswer]);
-	printf("%s: %s\n", answerLabel(keptWrongAnswer), question->answers[keptWrongAnswer]);
+	for (int i = 0; i < 4; i++) {
+		if (i != currentQuestion->correctAnswer && i != keptWrongAnswer) {
+			availableAnswers[i] = 0;
+		}
+	}
+
+	printf("50/50 removed two incorrect answers.\n");
 }
 
 int friendHelp(Question* q) {
-	Question* question = NULL;
-
 	if (q != NULL) {
-		question = q;
-	} else {
-		question = currentQuestion;
+		setCurrentQuestion(q);
 	}
 
-	if (question == NULL) {
+	if (currentQuestion == NULL) {
 		printf("No active question!\n");
 		return -1;
 	}
 
-	int chanceOfCorrect = 80 - (question->difficulty - 1) * 12;
-	if (chanceOfCorrect < 35) {
-		chanceOfCorrect = 35;
-	}
-
 	int roll = rand() % 100;
-	int suggestion = question->correctAnswer;
+	int suggestion = currentQuestion->correctAnswer;
 
-	if (roll >= chanceOfCorrect) {
+	if (roll >= hintChance(currentQuestion->difficulty)) {
 		do {
 			suggestion = rand() % 4;
-		} while (suggestion == question->correctAnswer);
+		} while (suggestion == currentQuestion->correctAnswer ||
+		         !availableAnswers[suggestion]);
 	}
 
-	printf("Your friend thinks the answer is %s (%s).\n", answerLabel(suggestion), question->answers[suggestion]);
+	printf("Your friend thinks the answer is %s (%s).\n",
+	       answerLabel(suggestion), currentQuestion->answers[suggestion]);
 
 	return suggestion;
 }
 
 void audienceHelp(Question* q) {
-    Question* question = q != NULL ? q : currentQuestion;
+	if (q != NULL) {
+		setCurrentQuestion(q);
+	}
 
-	if (question == NULL) {
+	if (currentQuestion == NULL) {
 		printf("No active question!\n");
 		return;
 	}
 
-	int correctShare = 55 - (question->difficulty - 1) * 8;
-	if (correctShare < 25) {
-		correctShare = 25;
-	}
-
-	int remainingShare = 100 - correctShare;
 	int shares[4] = {0, 0, 0, 0};
-	shares[question->correctAnswer] = correctShare;
-
-	int otherIndexes[3];
+	int otherIndexes[3] = {0, 0, 0};
 	int otherCount = 0;
+
 	for (int i = 0; i < 4; i++) {
-		if (i != question->correctAnswer) {
+		if (i != currentQuestion->correctAnswer && availableAnswers[i]) {
 			otherIndexes[otherCount++] = i;
 		}
 	}
 
-	int first = rand() % (remainingShare + 1);
-	int second = rand() % (remainingShare - first + 1);
-	int third = remainingShare - first - second;
+	int correctHasMostVotes =
+		rand() % 100 < hintChance(currentQuestion->difficulty);
+	int remainingVotes;
 
-	shares[otherIndexes[0]] = first;
-	shares[otherIndexes[1]] = second;
-	shares[otherIndexes[2]] = third;
+	if (correctHasMostVotes) {
+		shares[currentQuestion->correctAnswer] = 55 + rand() % 16;
+		remainingVotes = 100 - shares[currentQuestion->correctAnswer];
+	} else {
+		shares[currentQuestion->correctAnswer] = 10 + rand() % 16;
+		shares[otherIndexes[0]] = 45 + rand() % 11;
+		remainingVotes = 100 - shares[currentQuestion->correctAnswer]
+		                 - shares[otherIndexes[0]];
+	}
+
+	for (int i = 0; i < otherCount; i++) {
+		if (shares[otherIndexes[i]] != 0) {
+			continue;
+		}
+
+		int answersLeft = 0;
+		for (int j = i; j < otherCount; j++) {
+			if (shares[otherIndexes[j]] == 0) {
+				answersLeft++;
+			}
+		}
+
+		if (answersLeft == 1) {
+			shares[otherIndexes[i]] = remainingVotes;
+			remainingVotes = 0;
+		} else {
+			int votes = rand() % (remainingVotes + 1);
+			shares[otherIndexes[i]] = votes;
+			remainingVotes -= votes;
+		}
+	}
+
+	if (remainingVotes > 0) {
+		shares[otherIndexes[0]] += remainingVotes;
+	}
 
 	printf("The audience votes:\n");
 	for (int i = 0; i < 4; i++) {
-		printf("%s: %d%%\n", answerLabel(i), shares[i]);
+		if (availableAnswers[i]) {
+			printf("%s: %d%%\n", answerLabel(i), shares[i]);
+		}
 	}
 }
