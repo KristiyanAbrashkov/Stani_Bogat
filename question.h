@@ -18,6 +18,7 @@ extern int questionCount;
 
 void addQuestion();
 void editQuestion();
+void showQuestions();
 void printQuestion(int index);
 
 int saveQuestions(const char* filename);

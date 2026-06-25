@@ -193,6 +193,31 @@ void editQuestion(){
     printf("Question edited successfully!\n");
 }
 
+void showQuestions() {
+    char buf[MAX_TEXT];
+    int i;
+
+    if(questionCount == 0){
+        printf("No questions available.\n");
+        return;
+    }
+
+    printf("Enter admin password: ");
+    fgets(buf, sizeof(buf), stdin);
+    stripNewline(buf);
+
+    if(strcmp(buf, "admin123") != 0){
+        printf("Access denied.\n");
+        return;
+    }
+
+    printf("\n--- All questions (%d) ---\n", questionCount);
+    for(i = 0; i < questionCount; i++){
+        printQuestion(i);
+        printf("Correct answer: %c\n", 'A' + questions[i].correctAnswer);
+    }
+}
+
 void printQuestion(int index) {
     Question* q;
     int i;
