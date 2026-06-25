@@ -41,7 +41,7 @@ int main()
                 printf("Invalid choice. Please choose from 1 to 4.\n");
                 break;
         }
-    } while (choice != 4);
+    } while (choice != 5);
 
     saveQuestions("questions.txt");
 
