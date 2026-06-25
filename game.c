@@ -24,8 +24,84 @@ static const char* answerLabel(int index) {
 	}
 }
 
+static int readAnswer() {
+	char input[20];
+
+	while (1) {
+		printf("Your answer (A-D): ");
+
+		if (fgets(input, sizeof(input), stdin) == NULL) {
+			return -1;
+		}
+
+		if (input[0] >= 'a' && input[0] <= 'd') {
+			return input[0] - 'a';
+		}
+
+		if (input[0] >= 'A' && input[0] <= 'D') {
+			return input[0] - 'A';
+		}
+
+		printf("Invalid answer. Please enter A, B, C or D.\n");
+	}
+}
+
 void startGame() {
+	Question* gameQuestions[10];
+	int difficulty;
+	int questionNumber;
+	int answer;
+
 	seedRandomGenerator();
+	currentQuestion = NULL;
+
+	for (difficulty = 1; difficulty <= 10; difficulty++) {
+		gameQuestions[difficulty - 1] = getRandomQuestion(difficulty);
+
+		if (gameQuestions[difficulty - 1] == NULL) {
+			printf("The game cannot start because there is no question "
+			       "with difficulty %d.\n", difficulty);
+			currentQuestion = NULL;
+			return;
+		}
+	}
+
+	printf("\nThe game has started! Answer all 10 questions to win.\n");
+
+	for (questionNumber = 0; questionNumber < 10; questionNumber++) {
+		currentQuestion = gameQuestions[questionNumber];
+
+		printf("\n========================================\n");
+		printf("Question %d/10 | Difficulty: %d/10\n",
+		       questionNumber + 1, currentQuestion->difficulty);
+		printf("========================================\n");
+		printf("%s\n\n", currentQuestion->question);
+
+		for (int i = 0; i < 4; i++) {
+			printf("  %s) %s\n",
+			       answerLabel(i), currentQuestion->answers[i]);
+		}
+
+		answer = readAnswer();
+
+		if (answer == -1) {
+			printf("The game was interrupted.\n");
+			currentQuestion = NULL;
+			return;
+		}
+
+		if (answer != currentQuestion->correctAnswer) {
+			printf("Wrong answer! The correct answer was %s.\n",
+			       answerLabel(currentQuestion->correctAnswer));
+			printf("Game over!\n");
+			currentQuestion = NULL;
+			return;
+		}
+
+		printf("Correct answer!\n");
+	}
+
+	printf("\nCongratulations! You answered all 10 questions correctly!\n");
 	currentQuestion = NULL;
 }
 
