@@ -7,7 +7,7 @@ int main()
 {
     int choice;
 
-    loadQuestions("questions.dat");
+    loadQuestions("questions.txt");
 
     do {
         printf("\n===== WHO WANTS TO BE A MILLIONAIRE =====\n");
@@ -39,7 +39,7 @@ int main()
         }
     } while (choice != 4);
 
-    saveQuestions("questions.dat");
+    saveQuestions("questions.txt");
 
     return 0;
 }
